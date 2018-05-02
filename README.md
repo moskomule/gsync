@@ -42,4 +42,5 @@ gsync README.md [--dir directory]
 ## Todo
 
 - [ ] Add features other than uploading (currently it's not *sync*)
-- [ ] Async uploading (currently it's not fast)
+- [ ] Fast uploading (currently it's not fast)
+- [ ] Enable logging
