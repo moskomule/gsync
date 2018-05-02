@@ -10,19 +10,10 @@ LOG_LEVEL = {"debug": logging.DEBUG,
              "critical": logging.CRITICAL}
 
 
-def get_logger(name: str = None, stdout_filter_level: str = "debug"):
-    """
-    basic logger
-    :param name: name of logger
-    :param log_file:
-    :param file_filter_level:
-    :param stdout_filter_level:
-    :return:
-    """
+def get_logger(name: str = None, stdout_filter_level: str = "info"):
     name = __name__ if name is None else name
     logger = logging.getLogger(name=name)
-    formatter = logging.Formatter("[%(name)s|%(asctime)s|%(levelname)s] %(message)s",
-                                  datefmt="%Y-%m-%d %H:%M:%S")
+    formatter = logging.Formatter("%(asctime)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
     ch = logging.StreamHandler()
     if stdout_filter_level not in LOG_LEVEL.keys():
         raise ValueError(f"{stdout_filter_level} is not a correct log level! ({LOG_LEVEL.keys()})")
@@ -31,5 +22,6 @@ def get_logger(name: str = None, stdout_filter_level: str = "debug"):
     ch.setLevel(stdout_filter_level)
     ch.setFormatter(formatter)
     logger.addHandler(ch)
+    logger.setLevel(stdout_filter_level)
 
     return logger

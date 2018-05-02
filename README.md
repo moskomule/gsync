@@ -23,6 +23,14 @@ oauth_scope:
   - https://www.googleapis.com/auth/drive.install
 ```
 
+## Installation
+
+```
+git clone https://github.com/moskomule/gsync
+cd gsync
+pip install -e .
+```
+
 ## Usage
 
 ### Python
@@ -36,11 +44,7 @@ drive.upload("this.png", "somewhere")
 ### Command Line
 
 ```shell
-gsync README.md [--dir directory]
+gsync upload PATHS [--dir DIRECTORY_NAME]
+gsync download FILE_IDS
+gsync list [--max MAX_NUMBER] [--parent PARENT_NAME]
 ```
-
-## Todo
-
-- [ ] Add features other than uploading (currently it's not *sync*)
-- [ ] Fast uploading (currently it's not fast)
-- [ ] Enable logging
