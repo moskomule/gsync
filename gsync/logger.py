@@ -1,5 +1,4 @@
 import logging
-from typing import TextIO
 
 __all__ = ["get_logger"]
 

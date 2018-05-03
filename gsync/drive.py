@@ -1,10 +1,8 @@
-import os
 from pathlib import Path
-from pydrive.auth import GoogleAuth
-from pydrive.drive import GoogleDrive
 
 from .file import LocalFile, DriveFile
 from .logger import get_logger
+from .backends import _authorize
 
 logger = get_logger(name="gsync", stdout_filter_level="info")
 __all__ = ["Drive"]
@@ -15,24 +13,36 @@ class Drive(object):
 
     def __init__(self):
         # authorize
-        self.drive = None
-        self._authorize()
+        self.drive = _authorize()
         http = self.drive.auth.Get_Http_Object()
         self.param = {"http": http}
 
-    def create_directory(self, name, parent_id=None):
+    def create_directory(self, name: str, parent_id: str = None):
+        """
+        Create an empty directory
+        :param name: name of the directory
+        :param parent_id: id of the parent directory. If None, the parent is the root. (default: None)
+        :return: id of the created directory
+        """
         new_dir = LocalFile(self.drive, name, is_directory=True,
                             parent_id=parent_id)
         new_dir.upload()
-        return new_dir.file_id
+        id = new_dir.file_id
+        self._parents[name] = id
+        return id
 
-    def upload(self, path, parent=None):
-        if parent is None:
+    def upload(self, path: str or Path, parent_name: str = None):
+        """
+        Upload a file
+        :param path: path to the file to be uploaded
+        :param parent_name: name of the parent directory. If None, the parent is the root. (default: None)
+        """
+        if parent_name is None:
             self._upload(path)
         else:
-            # todo what if parent is like /foo/bar ?
-            self._parents[parent] = self.create_directory(parent)
-            self._upload(path, self._parents[parent])
+            # todo what if parent_name is like /foo/bar ?
+            self._parents[parent_name] = self.create_directory(parent_name)
+            self._upload(path, self._parents[parent_name])
 
     def _upload(self, path, parent_id=None):
         # internal process
@@ -49,16 +59,27 @@ class Drive(object):
             logger.warning(e)
 
         if path.is_dir():
+            # recursively upload the contents
             for p in path.iterdir():
                 self._upload(p, parent_id=file.file_id)
 
-    def download(self, id, save_dir):
-        save_dir = Path(save_dir)
+    def download(self, id, save_dir=None):
+        """
+        Download a file
+        :param id: file id of the file to be downloaded
+        :param save_dir: the directory path the downloaded file to be saved. If None, save in the current directory.
+        """
+        save_dir = Path("." if save_dir is None else save_dir)
         file = DriveFile(self.drive, id)
         logger.info(f"Downloaded: {file.name} in {str(save_dir)}")
         file.download(save_dir)
 
     def list(self, parent=None, max_size=10):
+        """
+        List files in Drive
+        :param parent: parent name. If None, parent is not set (default: None)
+        :param max_size: the number of contents to be listed (default: 10)
+        """
         meta_data = {"q": "trashed=false",
                      "maxResults": max_size}
         if parent is not None:
@@ -68,13 +89,3 @@ class Drive(object):
             return [(f["title"], f["id"], f['mimeType']) for f in file_list]
         except Exception as e:
             logger.warning(e)
-
-    def _authorize(self):
-        env = os.getenv("GDRIVE_PATH")
-        if env is None:
-            yaml = Path("~/.gdrive/settings.yaml").expanduser()
-        else:
-            yaml = Path(env) / "settings.yaml"
-        gauth = GoogleAuth(yaml)
-        gauth.CommandLineAuth()
-        self.drive = GoogleDrive(gauth)

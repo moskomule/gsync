@@ -38,7 +38,10 @@ pip install -e .
 ```python
 from gsync import Drive
 drive = Drive()
-drive.upload("this.png", "somewhere")
+drive.create_directory("new_directory")
+drive.upload("this.png", "new_directory")
+drive.list()
+drive.download(FILE_ID, "somewhere")
 ```
 
 ### Command Line
