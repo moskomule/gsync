@@ -16,13 +16,15 @@ def download(args):
 
 def list(args):
     drive = Drive()
-    file_list = drive.list(args.parent, args.max)
+    file_list = drive.list(args.parent, args.max + 1)
     if len(file_list) == 0:
         print("No file found!")
     else:
         max_length = max([len(f[0]) for f in file_list])
-        for file in file_list:
+        for file in file_list[: args.max]:
             print(f"name: {file[0]:<{max_length + 5}} id: {file[1]}")
+        if len(file_list) > args.max:
+            print("and more...")
 
 
 def main():
@@ -43,7 +45,7 @@ def main():
 
     # list
     p_list = p_sub.add_parser("list")
-    p_list.add_argument("--max", default=10, help="Maximum number of contents to be shown")
+    p_list.add_argument("--max", type=int, default=10, help="Maximum number of contents to be shown")
     p_list.add_argument("--parent", default=None, help="Parent directory name")
     p_list.set_defaults(func=list)
 
