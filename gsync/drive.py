@@ -41,8 +41,11 @@ class Drive(object):
             self._upload(path)
         else:
             # todo what if parent_name is like /foo/bar ?
-            self._parents[parent_name] = self.create_directory(parent_name)
-            self._upload(path, self._parents[parent_name])
+            id = self._parents.get(parent_name)
+            if id is None:
+                id = self.create_directory(parent_name)
+                self._parents[parent_name] = id
+            self._upload(path, id)
 
     def _upload(self, path, parent_id=None):
         # internal process
@@ -50,17 +53,21 @@ class Drive(object):
 
         logger.info(f"Uploading: {path.name}")
         file = LocalFile(self.drive, path.name, path.is_dir(), parent_id)
-        if path.is_file():
+        if not file.is_directory:
             file.set_content(path)
 
         try:
             file.upload(param=self.param)
         except Exception as e:
             logger.warning(e)
+            logger.warning(file)
 
         if path.is_dir():
             # recursively upload the contents
             for p in path.iterdir():
+                if p.name.startswith("."):
+                    logger.info(f"filename {p.name} starts with '.' so it's skipped to upload")
+                    continue
                 self._upload(p, parent_id=file.file_id)
 
     def download(self, id, save_dir=None):

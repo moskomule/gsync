@@ -17,7 +17,7 @@ class LocalFile(File):
     def __init__(self, drive: GoogleDrive, name: str, is_directory: bool, parent_id: str = None):
         super(LocalFile, self).__init__(drive, name, is_directory, parent_id)
         if parent_id is not None:
-            self.metadata["parents"] = [{"kind": "drive#fileLink", "id": parent_id}]
+            self.metadata["parents"] = [{"id": parent_id}]
         if self.is_directory:
             self.metadata["mimeType"] = DIRECTORY_MIME
         self.file = self.drive.CreateFile(self.metadata)
@@ -31,6 +31,10 @@ class LocalFile(File):
     @property
     def file_id(self):
         return self.file.get("id")
+
+    def __repr__(self):
+        return f"{self.name} ({'directory' if self.is_directory else 'file'}) \n" \
+               f"meta: {self.metadata}"
 
 
 class DriveFile(File):
