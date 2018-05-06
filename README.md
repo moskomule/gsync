@@ -26,6 +26,12 @@ oauth_scope:
 ## Installation
 
 ```
+pip install git+https://github.com/moskomule/gsync#egg==gsync
+```
+
+or
+
+```
 git clone https://github.com/moskomule/gsync
 cd gsync
 pip install -e .
@@ -51,3 +57,8 @@ gsync upload PATHS [--dir DIRECTORY_NAME]
 gsync download FILE_IDS
 gsync list [--max MAX_NUMBER] [--parent PARENT_NAME]
 ```
+
+
+## Known issue
+
+See #2
